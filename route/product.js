@@ -1,5 +1,6 @@
 import express from "express";
 import productModel from "../models/product.js";
+import product from "../models/product.js";
 const router = express.Router()
 
 
@@ -64,7 +65,8 @@ router.post("/create", (req, res) =>{
                 user :{
                     name : result.name,
                     price : result.price,
-                   // category : result.category,
+                    desc : result.desc,
+                   category : result.category,
                     id : result._id
                 }
             })
@@ -80,10 +82,27 @@ router.post("/create", (req, res) =>{
 })
 
 
-router.put("/update", (req, res) => {
-    res.json({
-        msg : "updated a product"
-    })
+router.put("/:productid", (req, res) => {
+   const productid = req.params.productid
+
+    const updateOps = {}
+
+    for(const ops of req.body){
+        updateOps[ops.propName] = ops.value;
+    }
+
+    productModel
+        .findByIdAndUpdate(productid, {$set : updateOps})
+        .then(_ =>{
+            res.json({
+                msg : `updated product by ${productid}`
+            })
+        })
+        .catch(err =>{
+            res.json({
+                msg : err.message
+            })
+        })
 })
 
 
@@ -107,7 +126,7 @@ router.delete("/", (req, res) =>{
 router.delete("/:productid", (req, res) =>{
     productModel
         .findByIdAndDelete(req.params.productid)
-        .then(_ =>{
+        .then(_ => {
             res.json({
                 msg : "deleted product"
             })
